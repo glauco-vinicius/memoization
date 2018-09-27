@@ -1,0 +1,48 @@
+package mainpack;
+ 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.EnumSet;
+ 
+import static java.nio.file.StandardOpenOption.READ;
+ 
+public class HideAndSeek {
+	public static void main(String... args) {
+		// We create a Path out the file we are going to read
+		Path file = Paths.get(System.getProperty("user.home"), "file.txt");
+ 
+		// We open the file in order to read it ()
+		try (SeekableByteChannel sbc = Files.newByteChannel(file,
+				EnumSet.of(READ))) {
+			
+			// We use a ByteBuffer to read (2^5 size = 32)
+			ByteBuffer buff = ByteBuffer.allocate(1<<5);
+			// Position is set to 0
+			buff.clear();
+			
+			// We use the current encoding to read 
+			String encoding = System.getProperty("file.encoding");
+			
+			// While the number of bytes from the channel are > 0
+			while(sbc.read(buff)>0) {
+				
+				// Prepare the data to be written
+				buff.flip();
+				
+				// Usins the current enconding we decode the bytes read
+				System.out.print(Charset.forName(encoding).decode(buff));
+				
+				// Prepare the buffer for a new read
+				buff.clear();
+			}
+			
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+	}
+}
